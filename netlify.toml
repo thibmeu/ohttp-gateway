@@ -1,0 +1,16 @@
+[build]
+  edge_functions = "netlify/edge-functions"
+  publish = "dist"
+  command = "mkdir -p dist"
+
+[build.environment]
+  NODE_VERSION = "26"
+
+[[edge_functions]]
+  path = "/*"
+  function = "netlify"
+
+[template.environment]
+  OHTTP_KEY_SEED = { required = true, description = "Base64 master seed (generate with `npm run keygen`)" }
+  TARGET_URL = { description = "Target base URL (default: https://target.ohttp.info)" }
+  CORS_ORIGIN = { description = "Allowed CORS origin (default: *)" }

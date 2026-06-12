@@ -1,0 +1,10 @@
+{
+	"imports": {
+		"hono": "npm:hono",
+		"hono/": "npm:hono/",
+		"ohttp-ts": "npm:ohttp-ts",
+		"ohttp-ts/": "npm:ohttp-ts/",
+		"hpke": "npm:hpke",
+		"@panva/hpke-noble": "npm:@panva/hpke-noble"
+	}
+}

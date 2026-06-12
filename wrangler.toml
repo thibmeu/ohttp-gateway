@@ -1,0 +1,28 @@
+name = "ohttp-gateway"
+main = "src/cloudflare.ts"
+compatibility_date = "2025-03-10"
+workers_dev = true
+
+# Keys are derived from the OHTTP_KEY_SEED secret. Generate one with
+# `npm run keygen`, then store it with:
+#   npx wrangler secret put OHTTP_KEY_SEED
+
+# Uncomment to deploy to a custom domain:
+# [[routes]]
+# pattern = "gateway.yourdomain.com/*"
+# zone_name = "yourdomain.com"
+
+# Uncomment to forward to a co-located ohttp-target Worker via a service
+# binding. When set, the decapsulated request is forwarded to it directly
+# (no extra network hop) and TARGET_URL is ignored.
+# [[services]]
+# binding = "TARGET"
+# service = "ohttp-target"
+
+[observability]
+enabled = true
+
+[vars]
+MAX_REQUEST_SIZE = "1048576"  # 1MB
+TARGET_URL = "https://target.ohttp.info"
+CORS_ORIGIN = "*"
