@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
-	MIN_SEED_LENGTH,
 	base64Decode,
 	base64Encode,
+	MIN_SEED_LENGTH,
 	seedFromEnv,
 } from "../src/seed.ts";
 
