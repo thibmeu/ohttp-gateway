@@ -18,6 +18,7 @@ key configuration on every instance and region.
 - [Configuration](#configuration)
 - [Protocol](#protocol)
 - [Development](#development)
+- [Architecture](#architecture)
 - [Security considerations](#security-considerations)
 - [License](#license)
 
@@ -101,6 +102,16 @@ npm test
 npm run typecheck
 npm run lint
 ```
+
+## Architecture
+
+```
+Client → Relay → Gateway → Target
+                    ↑
+             (this service)
+```
+
+The gateway decapsulates the OHTTP request, forwards the inner request to the target, then encapsulates the response. It learns *what* was requested but never *who* asked: the [relay](https://github.com/thibmeu/ohttp-relay) has already stripped the client's identity. Keys come from `OHTTP_KEY_SEED`, so there's no per-request state to keep. The same seed produces the same key configuration wherever you run it.
 
 ## Security considerations
 
