@@ -18,7 +18,7 @@ key configuration on every instance and region.
 - [Configuration](#configuration)
 - [Protocol](#protocol)
 - [Development](#development)
-- [Key rotation](#key-rotation)
+- [Security considerations](#security-considerations)
 - [License](#license)
 
 ## Deploy
@@ -102,14 +102,40 @@ npm run typecheck
 npm run lint
 ```
 
-## Key rotation
+## Security considerations
 
-Rotation is not automated yet. Because the published config can advertise
+This software has not been audited. Please use at your sole discretion.
+
+The gateway's privacy and confidentiality guarantees rely on:
+
+1. **Oblivious HTTP** ([RFC 9458](https://www.rfc-editor.org/rfc/rfc9458)) and its
+   chunked extension
+   ([draft-ietf-ohai-chunked-ohttp](https://datatracker.ietf.org/doc/draft-ietf-ohai-chunked-ohttp/)).
+2. **HPKE** ([RFC 9180](https://www.rfc-editor.org/rfc/rfc9180)), as implemented by
+   [`hpke`](https://www.npmjs.com/package/hpke) (X25519) and
+   [`@panva/hpke-noble`](https://www.npmjs.com/package/@panva/hpke-noble) (ML-KEM-768).
+3. The [`ohttp-ts`](https://github.com/thibmeu/ohttp-ts) implementation of OHTTP.
+4. The underlying key-encapsulation mechanisms: X25519 (classical) and ML-KEM-768
+   (post-quantum).
+
+The privacy property only holds when the gateway and the
+[relay](https://github.com/thibmeu/ohttp-relay) are operated by separate,
+non-colluding parties: the relay hides the client's identity from the gateway,
+and the gateway hides the request contents from the relay.
+
+`OHTTP_KEY_SEED` is the gateway's most sensitive value — it deterministically
+derives every private key, so anyone who learns it can decapsulate all traffic.
+Store it as a platform secret, never in source control.
+
+### Key rotation
+
+Rotation is not automated yet. Because the published configuration can advertise
 multiple keys and the server decapsulates by key ID, the intended approach is a
 manual overlap: add a second seed-derived key, advertise both for at least the
-24h config cache window, then drop the old one. Until then, changing
-`OHTTP_KEY_SEED` rotates the keys immediately — clients holding a cached config
-will fail to decapsulate until they refetch (`Cache-Control: max-age=86400`).
+24h configuration cache window, then drop the old one. Until then, changing
+`OHTTP_KEY_SEED` rotates the keys immediately — clients holding a cached
+configuration will fail to decapsulate until they refetch
+(`Cache-Control: max-age=86400`).
 
 ## License
 
