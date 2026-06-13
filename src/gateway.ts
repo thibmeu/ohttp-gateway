@@ -42,8 +42,11 @@ export interface GatewayConfig {
 	maxRequestSize: number;
 	/** CORS allowed origin. */
 	corsOrigin: string;
-	/** Base URL of the target the decapsulated request is forwarded to. */
-	targetUrl: string;
+	/**
+	 * Base URL of the target the decapsulated request is forwarded to.
+	 * Required unless a `fetcher` service binding is supplied.
+	 */
+	targetUrl?: string | undefined;
 	/**
 	 * Optional custom fetch implementation for reaching the target.
 	 * Pass a Cloudflare service binding here for zero-latency target calls.
@@ -55,7 +58,6 @@ export interface GatewayConfig {
 export const defaults = {
 	maxRequestSize: 1_048_576,
 	corsOrigin: "*",
-	targetUrl: "https://target.ohttp.info",
 } as const;
 
 /** Request carrying Cloudflare's `cf` metadata, when running on Workers. */
@@ -64,6 +66,12 @@ type RequestWithCf = Request & {
 };
 
 export function createApp(config: GatewayConfig): Hono {
+	if (config.fetcher === undefined && !config.targetUrl) {
+		throw new Error(
+			"No target configured: set TARGET_URL or bind a TARGET service.",
+		);
+	}
+
 	const app = new Hono();
 	const fetcher = config.fetcher ?? fetch;
 	const server = new OHTTPServer([...config.keyConfigs]);
@@ -228,7 +236,7 @@ async function forwardToTarget(
 	// When a fetcher (service binding) is supplied, the inner URL is used as-is.
 	// Otherwise, rewrite the host to the configured target.
 	const targetUrl = new URL(innerRequest.url);
-	if (config.fetcher === undefined) {
+	if (config.fetcher === undefined && config.targetUrl) {
 		targetUrl.host = new URL(config.targetUrl).host;
 	}
 

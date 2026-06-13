@@ -24,8 +24,8 @@ describe("seedFromEnv", () => {
 		expect(() => seedFromEnv(short)).toThrow();
 	});
 
-	it("generates an ephemeral seed when unset", () => {
-		expect(seedFromEnv(undefined).length).toBe(MIN_SEED_LENGTH);
-		expect(seedFromEnv("").length).toBe(MIN_SEED_LENGTH);
+	it("throws when unset", () => {
+		expect(() => seedFromEnv(undefined)).toThrow();
+		expect(() => seedFromEnv("")).toThrow();
 	});
 });

@@ -17,5 +17,5 @@ export default createApp({
 		10,
 	),
 	corsOrigin: process.env.CORS_ORIGIN ?? defaults.corsOrigin,
-	targetUrl: process.env.TARGET_URL ?? defaults.targetUrl,
+	targetUrl: process.env.TARGET_URL,
 });

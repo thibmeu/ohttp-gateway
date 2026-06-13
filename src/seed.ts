@@ -34,30 +34,23 @@ export function base64Encode(bytes: Uint8Array): string {
 }
 
 /**
- * Resolve the master seed from an environment value.
+ * Resolve and validate the master seed from an environment value.
  *
- * If `OHTTP_KEY_SEED` is set, it is decoded and validated. If it is missing, an
- * ephemeral random seed is generated so local development works without setup —
- * but such keys do not persist across restarts and will differ between
- * instances, so this path warns loudly and must not be used in production.
+ * `OHTTP_KEY_SEED` is required: a missing seed throws rather than falling back
+ * to an ephemeral key, since such keys do not persist across restarts and would
+ * not match other instances. Generate one with `npm run keygen`.
  */
 export function seedFromEnv(value: string | undefined): Uint8Array {
-	if (value !== undefined && value !== "") {
-		const seed = base64Decode(value);
-		if (seed.length < MIN_SEED_LENGTH) {
-			throw new Error(
-				`OHTTP_KEY_SEED must decode to at least ${MIN_SEED_LENGTH} bytes, got ${seed.length}`,
-			);
-		}
-		return seed;
+	if (value === undefined || value === "") {
+		throw new Error(
+			"OHTTP_KEY_SEED is not set. Generate one with `npm run keygen` and set it as a secret.",
+		);
 	}
-
-	console.warn(
-		"OHTTP_KEY_SEED is not set — generating an ephemeral seed. Keys will not " +
-			"persist across restarts and will not match other instances. Run " +
-			"`npm run keygen` and set OHTTP_KEY_SEED for production.",
-	);
-	const seed = new Uint8Array(MIN_SEED_LENGTH);
-	crypto.getRandomValues(seed);
+	const seed = base64Decode(value);
+	if (seed.length < MIN_SEED_LENGTH) {
+		throw new Error(
+			`OHTTP_KEY_SEED must decode to at least ${MIN_SEED_LENGTH} bytes, got ${seed.length}`,
+		);
+	}
 	return seed;
 }

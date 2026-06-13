@@ -39,7 +39,7 @@ async function getApp(env: Env): Promise<Hono> {
 				10,
 			),
 			corsOrigin: env.CORS_ORIGIN ?? defaults.corsOrigin,
-			targetUrl: env.TARGET_URL ?? defaults.targetUrl,
+			targetUrl: env.TARGET_URL,
 			...(env.TARGET && { fetcher: env.TARGET.fetch.bind(env.TARGET) }),
 		});
 	})();

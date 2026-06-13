@@ -17,5 +17,5 @@ export default createApp({
 		10,
 	),
 	corsOrigin: Deno.env.get("CORS_ORIGIN") ?? defaults.corsOrigin,
-	targetUrl: Deno.env.get("TARGET_URL") ?? defaults.targetUrl,
+	targetUrl: Deno.env.get("TARGET_URL"),
 });
