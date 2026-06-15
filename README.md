@@ -24,6 +24,8 @@ key configuration on every instance and region.
 
 ## Deploy
 
+OHTTP requires the gateway and [relay](https://github.com/thibmeu/ohttp-relay) be operated by different entities. We list several platforms so you can put each on a different provider: one provider operating both could attribute requests to clients.
+
 | Platform | | Runtime |
 |---|---|---|
 | Cloudflare | [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/thibmeu/ohttp-gateway) | Workers |
