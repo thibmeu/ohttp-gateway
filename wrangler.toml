@@ -3,10 +3,6 @@ main = "src/cloudflare.ts"
 compatibility_date = "2025-03-10"
 workers_dev = true
 
-# Minify the uploaded script: it is parsed on every cold start, and wrangler
-# does not minify by default. Source maps are uploaded alongside so stack
-# traces still point at the original TypeScript — Cloudflare fetches them
-# after the invocation completes, so they cost no CPU and no bundle size.
 minify = true
 upload_source_maps = true
 
