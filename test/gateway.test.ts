@@ -30,8 +30,6 @@ describe("gateway", () => {
 		const res = await app.fetch(new Request("https://gw/health"));
 		expect(res.status).toBe(200);
 		expect(await res.text()).toBe("OK");
-		// Workers Caching would otherwise cache a 200 without Cache-Control for
-		// two hours, so a stale "OK" could outlive the gateway being healthy.
 		expect(res.headers.get("cache-control")).toBe("no-store");
 	});
 
