@@ -94,7 +94,10 @@ export function createApp(config: GatewayConfig): Hono {
 		}),
 	);
 
-	app.get("/health", (c) => c.text("OK"));
+	// no-store: with Workers Caching enabled, a response without Cache-Control
+	// picks up RFC 9111 heuristic freshness (2 h for a 200), so a cached "OK"
+	// would keep reporting healthy after the gateway stopped being so.
+	app.get("/health", (c) => c.text("OK", 200, { "Cache-Control": "no-store" }));
 
 	// Key configuration: stable across the seed's lifetime, safe to cache.
 	const keyConfigHandler = (_c: Context) =>
