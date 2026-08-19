@@ -29,3 +29,46 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
+
+  platforms:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: npm ci
+
+      - name: Cloudflare - bundle the Worker and check wrangler.toml
+        run: npx wrangler deploy --dry-run --outdir /tmp/worker
+
+      - name: Netlify - resolve the edge function on Deno
+        run: >
+          deno bundle --node-modules-dir=none
+          --import-map=netlify/edge-functions/import_map.json
+          -o /tmp/netlify.js netlify/edge-functions/netlify.ts
+
+      - name: Railway - build the image with production deps only
+        run: docker build -t ohttp-gateway .
+
+      - name: Railway - boot the container and answer on both routes
+        run: |
+          seed=$(node --experimental-strip-types scripts/keygen.ts \
+            | grep -oE '[A-Za-z0-9+/]{43}=' | head -1)
+          docker run -d --rm --name gw -p 8787:3000 \
+            -e OHTTP_KEY_SEED="$seed" -e TARGET_URL=https://example.com \
+            ohttp-gateway
+          for _ in $(seq 40); do
+            curl -sf http://127.0.0.1:8787/health >/dev/null && break
+            sleep 0.5
+          done
+          curl -sf http://127.0.0.1:8787/health | grep -qx OK
+          curl -sf -o /dev/null -w '%{content_type}' \
+            http://127.0.0.1:8787/.well-known/ohttp-gateway \
+            | grep -qx application/ohttp-keys
+          docker logs gw
+          docker stop gw
