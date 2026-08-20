@@ -37,7 +37,7 @@ export interface GatewayConfig {
 	/** Key configs (with private keys) used to decapsulate requests. */
 	keyConfigs: readonly KeyConfigWithPrivate[];
 	/** Serialized public key configs for the `application/ohttp-keys` endpoint. */
-	serializedKeys: Uint8Array;
+	serializedKeys: Uint8Array<ArrayBuffer>;
 	/** Maximum request body size in bytes. */
 	maxRequestSize: number;
 	/** CORS allowed origin. */

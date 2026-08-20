@@ -64,7 +64,7 @@ export interface KeyConfigResult {
 	/** All key configs (X25519 + ML-KEM), with private keys, for the OHTTP server. */
 	keyConfigs: readonly KeyConfigWithPrivate[];
 	/** Serialized public key configs for the `application/ohttp-keys` endpoint. */
-	serialized: Uint8Array;
+	serialized: Uint8Array<ArrayBuffer>;
 }
 
 /** HKDF-SHA256 expand the master seed into per-suite IKM. */
