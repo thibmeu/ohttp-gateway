@@ -22,7 +22,7 @@ import {
 	KDF_HKDF_SHA256,
 	KEM_DHKEM_X25519_HKDF_SHA256,
 } from "hpke";
-import { AeadId, KdfId, KeyConfig, type KeyConfigWithPrivate } from "ohttp-ts";
+import { KeyConfig, type KeyConfigWithPrivate } from "ohttp-ts";
 
 /** HPKE cipher suite: X25519, HKDF-SHA256, AES-128-GCM (classical). */
 const X25519_SUITE = new CipherSuite(
@@ -37,11 +37,6 @@ const MLKEM_SUITE = new CipherSuite(
 	KDF_HKDF_SHA256_NOBLE,
 	AEAD_AES_128_GCM_NOBLE,
 );
-
-/** Symmetric algorithms advertised for every key in this gateway. */
-const SYMMETRIC_ALGORITHMS = [
-	{ kdfId: KdfId.HKDF_SHA256, aeadId: AeadId.AES_128_GCM },
-] as const;
 
 /**
  * Suites that make up one key configuration set. The `label` provides HKDF
@@ -110,9 +105,7 @@ export async function deriveKeyConfigs(
 			const ikm = await expandSeed(masterSeed, label, IKM_LENGTH);
 			// Derive with a placeholder key ID, then set a stable ID from the
 			// public key so it matches what clients see in the published config.
-			const config = await KeyConfig.derive(suite, ikm, 0, [
-				...SYMMETRIC_ALGORITHMS,
-			]);
+			const config = await KeyConfig.derive(suite, ikm, 0);
 			const keyId = await deriveKeyId(config.publicKey);
 			return { ...config, keyId };
 		}),
