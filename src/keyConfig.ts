@@ -8,19 +8,21 @@
  * HPKE's DeriveKeyPair via `ohttp-ts`'s `KeyConfig.derive`.
  *
  * Adding another suite later (e.g. a second classical key for rotation overlap)
- * is just another entry in `SUITES` — see the deferred rotation work.
+ * is just another entry in `suites` — see the deferred rotation work.
  */
 
 import {
 	AEAD_AES_128_GCM as AEAD_AES_128_GCM_NOBLE,
 	KDF_HKDF_SHA256 as KDF_HKDF_SHA256_NOBLE,
-	KEM_ML_KEM_768,
+	KDF_SHAKE256,
+	KEM_ML_KEM_768 as KEM_ML_KEM_768_NOBLE,
 } from "@panva/hpke-noble";
 import {
 	AEAD_AES_128_GCM,
 	CipherSuite,
 	KDF_HKDF_SHA256,
 	KEM_DHKEM_X25519_HKDF_SHA256,
+	KEM_ML_KEM_768,
 } from "hpke";
 import { KeyConfig, type KeyConfigWithPrivate } from "ohttp-ts";
 
@@ -33,20 +35,35 @@ const X25519_SUITE = new CipherSuite(
 
 /** HPKE cipher suite: ML-KEM-768, HKDF-SHA256, AES-128-GCM (post-quantum). */
 const MLKEM_SUITE = new CipherSuite(
-	KEM_ML_KEM_768,
+	KEM_ML_KEM_768_NOBLE,
 	KDF_HKDF_SHA256_NOBLE,
 	AEAD_AES_128_GCM_NOBLE,
 );
+
+export type CryptoBackend = "noble" | "native" | "workers";
+
+/** Workers has native ML-KEM but no cSHAKE256; borrow Noble's for DeriveKeyPair. */
+const workersMlKem = () => ({ ...KEM_ML_KEM_768(), kdf: KDF_SHAKE256() });
 
 /**
  * Suites that make up one key configuration set. The `label` provides HKDF
  * domain separation so each suite gets independent key material from the same
  * master seed; changing a label rotates that key.
  */
-const SUITES = [
-	{ suite: X25519_SUITE, label: "ohttp-info/key/x25519/v1" },
-	{ suite: MLKEM_SUITE, label: "ohttp-info/key/ml-kem-768/v1" },
-] as const;
+function suites(backend: CryptoBackend) {
+	const pq =
+		backend === "noble"
+			? MLKEM_SUITE
+			: new CipherSuite(
+					backend === "workers" ? workersMlKem : KEM_ML_KEM_768,
+					KDF_HKDF_SHA256,
+					AEAD_AES_128_GCM,
+				);
+	return [
+		{ suite: X25519_SUITE, label: "ohttp-info/key/x25519/v1" },
+		{ suite: pq, label: "ohttp-info/key/ml-kem-768/v1" },
+	];
+}
 
 /**
  * IKM length expanded per suite. 64 bytes satisfies both X25519 (Nsk = 32, IKM
@@ -99,9 +116,10 @@ async function deriveKeyId(publicKey: Uint8Array): Promise<number> {
  */
 export async function deriveKeyConfigs(
 	masterSeed: Uint8Array,
+	backend: CryptoBackend = "noble",
 ): Promise<KeyConfigResult> {
 	const keyConfigs = await Promise.all(
-		SUITES.map(async ({ suite, label }) => {
+		suites(backend).map(async ({ suite, label }) => {
 			const ikm = await expandSeed(masterSeed, label, IKM_LENGTH);
 			// Derive with a placeholder key ID, then set a stable ID from the
 			// public key so it matches what clients see in the published config.

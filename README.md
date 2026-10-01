@@ -125,8 +125,12 @@ The gateway's privacy and confidentiality guarantees rely on:
    chunked extension
    ([draft-ietf-ohai-chunked-ohttp](https://datatracker.ietf.org/doc/draft-ietf-ohai-chunked-ohttp/)).
 2. **HPKE** ([RFC 9180](https://www.rfc-editor.org/rfc/rfc9180)), as implemented by
-   [`hpke`](https://www.npmjs.com/package/hpke) (X25519) and
-   [`@panva/hpke-noble`](https://www.npmjs.com/package/@panva/hpke-noble) (ML-KEM-768).
+   [`hpke`](https://www.npmjs.com/package/hpke). Node.js/Docker uses native
+   WebCrypto for both suites. Workers uses native ML-KEM, HKDF, and AES-GCM
+   with `webcrypto_modern_algorithms` enabled; only the SHAKE step in deterministic
+   key derivation uses [`@panva/hpke-noble`](https://www.npmjs.com/package/@panva/hpke-noble).
+   Vercel and Netlify retain the Noble ML-KEM suite. All backends derive identical
+   public keys and key IDs from the same master seed.
 3. The [`ohttp-ts`](https://github.com/thibmeu/ohttp-ts) implementation of OHTTP.
 4. The underlying key-encapsulation mechanisms: X25519 (classical) and ML-KEM-768
    (post-quantum).

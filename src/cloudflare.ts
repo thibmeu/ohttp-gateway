@@ -30,7 +30,7 @@ let appPromise: Promise<Hono> | undefined;
 async function getApp(env: Env): Promise<Hono> {
 	appPromise ??= (async () => {
 		const seed = seedFromEnv(env.OHTTP_KEY_SEED);
-		const { keyConfigs, serialized } = await deriveKeyConfigs(seed);
+		const { keyConfigs, serialized } = await deriveKeyConfigs(seed, "workers");
 		return createApp({
 			keyConfigs,
 			serializedKeys: serialized,

@@ -8,7 +8,7 @@ import { deriveKeyConfigs } from "./keyConfig.ts";
 import { seedFromEnv } from "./seed.ts";
 
 const seed = seedFromEnv(process.env.OHTTP_KEY_SEED);
-const { keyConfigs, serialized } = await deriveKeyConfigs(seed);
+const { keyConfigs, serialized } = await deriveKeyConfigs(seed, "native");
 
 const app = createApp({
 	keyConfigs,
