@@ -1,4 +1,9 @@
 import {
+	AEAD_AES_128_GCM as NOBLE_AES,
+	KDF_HKDF_SHA256 as NOBLE_HKDF,
+	KEM_ML_KEM_768 as NOBLE_MLKEM,
+} from "@panva/hpke-noble";
+import {
 	AEAD_AES_128_GCM,
 	CipherSuite,
 	KDF_HKDF_SHA256,
@@ -84,3 +89,35 @@ describe("gateway", () => {
 		expect(await inner.text()).toBe("hello from target");
 	});
 });
+
+describe.each(["native", "workers"] as const)(
+	"%s ML-KEM gateway",
+	(backend) => {
+		it("accepts a Noble client and encrypts a compatible response", async () => {
+			const { keyConfigs, serialized } = await deriveKeyConfigs(seed, backend);
+			const app = createApp({
+				keyConfigs,
+				serializedKeys: serialized,
+				maxRequestSize: 1_048_576,
+				corsOrigin: "*",
+				targetUrl: "https://target.example",
+				fetcher: async () => new Response("native PQ response"),
+			});
+			const config = KeyConfig.parseMultiple(serialized).find(
+				(c) => c.kemId === 0x41,
+			);
+			if (!config) throw new Error("missing ML-KEM config");
+			const client = new OHTTPClient(
+				new CipherSuite(NOBLE_MLKEM, NOBLE_HKDF, NOBLE_AES),
+				config,
+			);
+			const { init, context } = await client.encapsulateRequest(
+				new Request("https://target.example/"),
+			);
+			const response = await app.fetch(new Request("https://gw/ohttp", init));
+			expect(response.status).toBe(200);
+			const inner = await context.decapsulateResponse(response);
+			expect(await inner.text()).toBe("native PQ response");
+		});
+	},
+);

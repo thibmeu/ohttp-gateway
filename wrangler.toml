@@ -1,6 +1,7 @@
 name = "ohttp-gateway"
 main = "src/cloudflare.ts"
 compatibility_date = "2025-03-10"
+compatibility_flags = ["webcrypto_modern_algorithms"]
 workers_dev = true
 
 minify = true

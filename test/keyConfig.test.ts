@@ -35,3 +35,18 @@ describe("deriveKeyConfigs", () => {
 		expect(KeyConfig.parseMultiple(serialized)).toHaveLength(2);
 	});
 });
+
+describe.each(["native", "workers"] as const)(
+	"%s key compatibility",
+	(backend) => {
+		it.each([0, 42, 255])(
+			"preserves advertised keys for seed %i",
+			async (value) => {
+				const seed = new Uint8Array(32).fill(value);
+				const original = await deriveKeyConfigs(seed);
+				const migrated = await deriveKeyConfigs(seed, backend);
+				expect(migrated.serialized).toEqual(original.serialized);
+			},
+		);
+	},
+);
