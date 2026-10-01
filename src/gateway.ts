@@ -9,9 +9,10 @@
  * - GET  /health                     → Health check (gateway-local)
  * - GET  /.well-known/ohttp-gateway  → Key configuration (application/ohttp-keys)
  * - GET  /ohttp-config               → Alias of the key configuration
- * - POST /ohttp                      → OHTTP decapsulation, standard
+ * - POST /.well-known/ohttp-gateway  → OHTTP decapsulation (RFC 9540), standard
  *                                      (message/ohttp-req) or chunked
  *                                      (message/ohttp-chunked-req)
+ * - POST /ohttp                      → Alias of the above
  *
  * Key material is supplied pre-derived (see keyConfig.ts) so this module stays
  * free of any storage or platform dependency.
@@ -108,7 +109,7 @@ export function createApp(config: GatewayConfig): Hono {
 	app.get("/.well-known/ohttp-gateway", keyConfigHandler);
 	app.get("/ohttp-config", keyConfigHandler);
 
-	app.post("/ohttp", async (c) => {
+	app.on("POST", ["/.well-known/ohttp-gateway", "/ohttp"], async (c) => {
 		const contentType = c.req.header("Content-Type");
 		try {
 			if (contentType === MediaType.CHUNKED_REQUEST) {

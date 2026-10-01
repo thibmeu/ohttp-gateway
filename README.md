@@ -78,10 +78,11 @@ On Cloudflare, an optional `TARGET` service binding to a co-located
 |---|---|---|
 | `GET` | `/.well-known/ohttp-gateway` | Key configuration (`application/ohttp-keys`) |
 | `GET` | `/ohttp-config` | Alias of the above |
-| `POST` | `/ohttp` | OHTTP decapsulation |
+| `POST` | `/.well-known/ohttp-gateway` | OHTTP decapsulation (RFC 9540) |
+| `POST` | `/ohttp` | Alias of the above |
 | `GET` | `/health` | Health check |
 
-The `Content-Type` of a `POST /ohttp` request selects the variant:
+The `Content-Type` of a POST request to either gateway route selects the variant:
 
 | Content-Type | Description |
 |---|---|
