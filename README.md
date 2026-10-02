@@ -31,7 +31,7 @@ OHTTP requires the gateway and [relay](https://github.com/thibmeu/ohttp-relay) b
 | Cloudflare | [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/thibmeu/ohttp-gateway) | Workers |
 | Vercel | [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fthibmeu%2Fohttp-gateway&env=OHTTP_KEY_SEED,TARGET_URL&envDescription=Master+seed+and+target+URL&envLink=https%3A%2F%2Fgithub.com%2Fthibmeu%2Fohttp-gateway%23configuration&project-name=ohttp-gateway&repository-name=ohttp-gateway) | Edge |
 | Netlify | [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/thibmeu/ohttp-gateway) | Edge (Deno) |
-| Railway | [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template/ohttp-gateway) | Node.js |
+| Railway | [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/9D143E) | Node.js |
 
 After deploying, set `OHTTP_KEY_SEED` (see [Keys](#keys)). Cloudflare uses a
 secret (`npx wrangler secret put OHTTP_KEY_SEED`); the others take an
@@ -54,15 +54,14 @@ deterministically derives one key configuration containing two keys:
 | Classical | X25519 (DHKEM-X25519-HKDF-SHA256) |
 | Post-quantum | ML-KEM-768 |
 
-If `OHTTP_KEY_SEED` is unset, the gateway generates an ephemeral seed at boot so
-local development works without setup. Such keys are not persisted and differ
-between instances — never run production without a seed.
+`OHTTP_KEY_SEED` is required on every platform, including local development.
+Generate it with `npm run keygen`.
 
 ## Configuration
 
 | Variable | Default | Description |
 |---|---|---|
-| `OHTTP_KEY_SEED` | *(ephemeral)* | Base64 master seed for key derivation |
+| `OHTTP_KEY_SEED` | Required | Base64 master seed for key derivation |
 | `TARGET_URL` | `https://target.ohttp.info` | Base URL the inner request is forwarded to |
 | `CORS_ORIGIN` | `*` | Allowed CORS origin |
 | `MAX_REQUEST_SIZE` | `1048576` | Maximum request body size (bytes) |
