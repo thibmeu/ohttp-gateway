@@ -26,13 +26,13 @@
     "ohttp-ts": "^0.6.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.9",
+    "@biomejs/biome": "^2.5.14",
     "@cloudflare/vitest-plugin": "^1.3.4",
     "@cloudflare/workers-types": "^5.20260815.1",
-    "@types/node": "^26.2.0",
-    "tsx": "^4.23.12",
+    "@types/node": "^26.6.3",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2",
-    "vitest": "^4.1.11",
+    "vitest": "^5.0.2",
     "wrangler": "^4.145.0"
   }
 }
