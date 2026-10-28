@@ -19,9 +19,9 @@
     "format": "biome format --write src test scripts api netlify"
   },
   "dependencies": {
-    "@hono/node-server": "^2.1.1",
+    "@hono/node-server": "^2.1.5",
     "@panva/hpke-noble": "^1.1.7",
-    "hono": "^4.13.9",
+    "hono": "^4.13.14",
     "hpke": "^1.1.7",
     "ohttp-ts": "^0.6.2"
   },
