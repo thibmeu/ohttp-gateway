@@ -4,6 +4,8 @@
  * @see https://www.rfc-editor.org/rfc/rfc9457.html
  */
 
+import { OHTTPError, OHTTPErrorCode } from "ohttp-ts";
+
 /** RFC 9457 Problem Details structure */
 export interface ProblemDetails {
 	/** URI reference identifying the problem type */
@@ -21,22 +23,22 @@ export interface ProblemDetails {
 /** Problem type identifiers for this gateway */
 export const ProblemType = {
 	/** Decapsulation failed (opaque - don't leak which step) */
-	DECAPSULATION_FAILED: "decapsulation-failed",
+	DECAPSULATION_FAILED: "https://ohttp.info/problems/decapsulation-failed",
+	KEY_CONFIGURATION:
+		"https://iana.org/assignments/http-problem-types#ohttp-key",
 	/** Request body too large */
-	REQUEST_TOO_LARGE: "request-too-large",
+	REQUEST_TOO_LARGE: "https://ohttp.info/problems/request-too-large",
 	/** Invalid Content-Type header */
-	INVALID_MEDIA_TYPE: "invalid-media-type",
+	INVALID_MEDIA_TYPE: "https://ohttp.info/problems/invalid-media-type",
 	/** HTTP method not allowed */
-	METHOD_NOT_ALLOWED: "method-not-allowed",
+	METHOD_NOT_ALLOWED: "https://ohttp.info/problems/method-not-allowed",
 	/** Endpoint not implemented */
-	NOT_IMPLEMENTED: "not-implemented",
+	NOT_IMPLEMENTED: "https://ohttp.info/problems/not-implemented",
 	/** Internal server error */
-	INTERNAL_ERROR: "internal-error",
+	INTERNAL_ERROR: "https://ohttp.info/problems/internal-error",
 } as const;
 
 type ProblemTypeValue = (typeof ProblemType)[keyof typeof ProblemType];
-
-const BASE_URI = "https://ohttp.info/problems";
 
 /**
  * Create an RFC 9457 Problem Details response.
@@ -48,7 +50,7 @@ export function problemResponse(
 	detail?: string,
 ): Response {
 	const problem: ProblemDetails = {
-		type: `${BASE_URI}/${problemType}`,
+		type: problemType,
 		title,
 		status,
 		...(detail !== undefined && { detail }),
@@ -65,10 +67,21 @@ export function problemResponse(
 /**
  * Opaque error for decryption failures.
  *
- * Returns identical response regardless of failure mode to prevent oracle attacks.
- * RFC 9458 §6 requires that decryption errors not leak information.
+ * Only public key configuration errors receive the RFC 9458 §5.3 signal.
+ * Other failures remain opaque.
  */
-export function opaqueDecryptionError(): Response {
+export function opaqueDecryptionError(error?: unknown): Response {
+	if (
+		error instanceof OHTTPError &&
+		(error.code === OHTTPErrorCode.UnknownKeyId ||
+			error.code === OHTTPErrorCode.UnsupportedCipherSuite)
+	) {
+		return problemResponse(
+			400,
+			ProblemType.KEY_CONFIGURATION,
+			"Oblivious HTTP key configuration not acceptable",
+		);
+	}
 	return problemResponse(
 		400,
 		ProblemType.DECAPSULATION_FAILED,

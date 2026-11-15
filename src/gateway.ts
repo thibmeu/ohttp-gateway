@@ -149,9 +149,9 @@ async function handleStandard(
 		innerRequest = result.request;
 		context = result.context;
 	} catch (e) {
-		// All failures return an identical opaque error (RFC 9458 §6).
+		// Signal public key configuration errors; keep decryption failures opaque.
 		console.error(e);
-		return opaqueDecryptionError();
+		return opaqueDecryptionError(e);
 	}
 
 	const targetResponse = await forwardToTarget(
@@ -189,7 +189,7 @@ async function handleChunked(
 		context = result.context;
 	} catch (e) {
 		console.error(e);
-		return opaqueDecryptionError();
+		return opaqueDecryptionError(e);
 	}
 
 	const targetResponse = await forwardToTarget(
